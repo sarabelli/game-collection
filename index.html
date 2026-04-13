@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collezione Videogiochi</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>Collezione Videogiochi</h1>
+
+  <div class="form-card">
+    <h2>Aggiungi un titolo</h2>
+    <div class="form-grid">
+      <input id="inp-title" placeholder="Titolo *" />
+      <select id="inp-platform">
+        <option value="">Piattaforma *</option>
+        <option>PC</option>
+        <option>PS5</option>
+        <option>Xbox</option>
+        <option>Switch</option>
+        <option>Altro</option>
+      </select>
+      <select id="inp-genre">
+        <option value="">Genere</option>
+        <option>RPG</option><option>FPS</option><option>Action</option>
+        <option>Adventure</option><option>Sport</option>
+        <option>Strategy</option><option>Horror</option><option>Altro</option>
+      </select>
+      <input id="inp-dev" placeholder="Studio / Sviluppatore" />
+      <input id="inp-year" type="number" placeholder="Anno (es. 2024)" min="1970" max="2030" />
+      <button class="btn btn-primary" onclick="addGame()">+ Aggiungi</button>
+    </div>
+    <div id="err" class="error-msg"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Titoli totali</div><div class="stat-val" id="st-total">0</div></div>
+    <div class="stat"><div class="stat-label">Piattaforme</div><div class="stat-val" id="st-plat">0</div></div>
+    <div class="stat"><div class="stat-label">Generi</div><div class="stat-val" id="st-genre">0</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input id="search" placeholder="Cerca per titolo o studio..." oninput="render()" />
+    <select id="filter-plat" onchange="render()">
+      <option value="">Tutte le piattaforme</option>
+      <option>PC</option><option>PS5</option><option>Xbox</option>
+      <option>Switch</option><option>Altro</option>
+    </select>
+    <select id="filter-genre" onchange="render()">
+      <option value="">Tutti i generi</option>
+      <option>RPG</option><option>FPS</option><option>Action</option>
+      <option>Adventure</option><option>Sport</option>
+      <option>Strategy</option><option>Horror</option><option>Altro</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="sort-btn" onclick="toggleSort('title')">Titolo <span id="s-title"></span></th>
+        <th>Piattaforma</th>
+        <th>Genere</th>
+        <th>Studio</th>
+        <th class="sort-btn" onclick="toggleSort('year')">Anno <span id="s-year"></span></th>
+        <th>Rimuovi</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <script src="app.js"></script>
+</body>
+</html>
