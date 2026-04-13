@@ -40,8 +40,35 @@ function loadFromStorage() {
 }
 
 /**
+ * Tenta la fetch tramite più proxy in sequenza.
+ * Se uno fallisce passa automaticamente al successivo.
+ * @param {string} url - URL da fetchare
+ * @returns {Promise<Object>} Dati JSON della risposta
+ */
+async function fetchWithFallback(url) {
+  const proxies = [
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://proxy.cors.sh/${url}`,
+  ];
+
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy);
+      if (!res.ok) continue;
+      const json = await res.json();
+      const text = json.contents ?? json;
+      return typeof text === "string" ? JSON.parse(text) : text;
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("Tutti i proxy hanno fallito");
+}
+
+/**
  * Cerca un gioco su Steam in base al testo inserito nel campo titolo.
- * Usa un debounce di 400ms per evitare troppe chiamate API.
+ * Usa un debounce di 200ms per evitare troppe chiamate API.
  * @returns {void}
  */
 function searchSteam() {
@@ -50,16 +77,17 @@ function searchSteam() {
 
   if (searchTimeout) clearTimeout(searchTimeout);
 
-  if (query.length < 3) {
+  if (query.length < 2) {
     resultsEl.innerHTML = "";
     return;
   }
 
+  resultsEl.innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Ricerca in corso...</div>`;
+
   searchTimeout = setTimeout(async () => {
     try {
-      const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query)}&l=italian&cc=IT`;
-      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-      const data = JSON.parse((await res.json()).contents);
+      const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query.toLowerCase())}&l=italian&cc=IT`;
+      const data = await fetchWithFallback(url);
 
       if (!data.items || data.items.length === 0) {
         resultsEl.innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Nessun risultato su Steam.</div>`;
@@ -80,7 +108,7 @@ function searchSteam() {
     } catch (err) {
       resultsEl.innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Errore nella ricerca Steam.</div>`;
     }
-  }, 400);
+  }, 200);
 }
 
 /**
@@ -97,8 +125,7 @@ async function selectSteamGame(appId, name, image) {
 
   try {
     const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&l=italian&cc=IT`;
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-    const data = JSON.parse((await res.json()).contents);
+    const data = await fetchWithFallback(url);
     const details = data[appId]?.data;
 
     if (details) {
