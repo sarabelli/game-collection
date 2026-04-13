@@ -58,8 +58,8 @@ function searchSteam() {
   searchTimeout = setTimeout(async () => {
     try {
       const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query)}&l=italian&cc=IT`;
-      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
-      const data = await res.json();
+      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const data = JSON.parse((await res.json()).contents);
 
       if (!data.items || data.items.length === 0) {
         resultsEl.innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Nessun risultato su Steam.</div>`;
@@ -97,8 +97,8 @@ async function selectSteamGame(appId, name, image) {
 
   try {
     const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&l=italian&cc=IT`;
-    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
-    const data = await res.json();
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    const data = JSON.parse((await res.json()).contents);
     const details = data[appId]?.data;
 
     if (details) {
