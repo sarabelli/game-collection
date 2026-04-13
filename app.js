@@ -1,3 +1,9 @@
+let games = [];
+let nextId = 1;
+let sortKey = null;
+let sortDir = 1;
+let searchTimeout = null;
+
 /**
  * @fileoverview Gestione della collezione di videogiochi.
  */
@@ -33,17 +39,108 @@ function loadFromStorage() {
   }
 }
 
-/** @type {Game[]} */
-let games = [];
+/**
+ * Cerca un gioco su Steam in base al testo inserito nel campo titolo.
+ * Usa un debounce di 400ms per evitare troppe chiamate API.
+ * @returns {void}
+ */
+function searchSteam() {
+  const query = document.getElementById("inp-title").value.trim();
+  const resultsEl = document.getElementById("steam-results");
 
-/** @type {number} */
-let nextId = 1;
+  if (searchTimeout) clearTimeout(searchTimeout);
 
-/** @type {string|null} */
-let sortKey = null;
+  if (query.length < 3) {
+    resultsEl.innerHTML = "";
+    return;
+  }
 
-/** @type {number} */
-let sortDir = 1;
+  searchTimeout = setTimeout(async () => {
+    try {
+      const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query)}&l=italian&cc=IT`;
+      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+      const data = await res.json();
+
+      if (!data.items || data.items.length === 0) {
+        resultsEl.innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Nessun risultato su Steam.</div>`;
+        return;
+      }
+
+      const top5 = data.items.slice(0, 5);
+      resultsEl.innerHTML = top5.map(game => `
+        <div class="steam-suggestion" onclick="selectSteamGame(${game.id}, '${game.name.replace(/'/g, "\\'")}', '${game.tiny_image}')">
+          <img src="${game.tiny_image}" alt="${game.name}" />
+          <div class="steam-suggestion-info">
+            <div class="steam-suggestion-title">${game.name}</div>
+            <div class="steam-suggestion-meta">App ID: ${game.id}</div>
+          </div>
+        </div>
+      `).join("");
+
+    } catch (err) {
+      resultsEl.innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Errore nella ricerca Steam.</div>`;
+    }
+  }, 400);
+}
+
+/**
+ * Seleziona un gioco dai suggerimenti Steam e recupera i dettagli completi.
+ * Compila automaticamente i campi del form.
+ * @param {number} appId - L'App ID del gioco su Steam
+ * @param {string} name - Il nome del gioco
+ * @param {string} image - L'URL dell'immagine del gioco
+ * @returns {Promise<void>}
+ */
+async function selectSteamGame(appId, name, image) {
+  document.getElementById("inp-title").value = name;
+  document.getElementById("steam-results").innerHTML = `<div style="font-size:13px;color:#666;margin-top:8px;">Caricamento dettagli...</div>`;
+
+  try {
+    const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&l=italian&cc=IT`;
+    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+    const data = await res.json();
+    const details = data[appId]?.data;
+
+    if (details) {
+      document.getElementById("inp-platform").value = "PC";
+
+      if (details.developers && details.developers.length > 0) {
+        document.getElementById("inp-dev").value = details.developers[0];
+      }
+
+      if (details.release_date?.date) {
+        const year = details.release_date.date.split(" ").pop();
+        if (!isNaN(year) && year.length === 4) {
+          document.getElementById("inp-year").value = year;
+        }
+      }
+
+      if (details.genres && details.genres.length > 0) {
+        const steamGenre = details.genres[0].description;
+        const genreMap = {
+          "Giochi di ruolo": "RPG",
+          "RPG": "RPG",
+          "Sparatutto": "FPS",
+          "Action": "Action",
+          "Azione": "Action",
+          "Avventura": "Adventure",
+          "Adventure": "Adventure",
+          "Sport": "Sport",
+          "Strategia": "Strategy",
+          "Strategy": "Strategy",
+          "Horror": "Horror",
+        };
+        const mapped = genreMap[steamGenre] || "Altro";
+        document.getElementById("inp-genre").value = mapped;
+      }
+    }
+
+    document.getElementById("steam-results").innerHTML = `<div style="font-size:13px;color:#27500A;margin-top:8px;">✓ Dati compilati da Steam! Controlla e clicca Aggiungi.</div>`;
+
+  } catch (err) {
+    document.getElementById("steam-results").innerHTML = `<div style="font-size:13px;color:#999;margin-top:8px;">Dati parziali, compila i campi mancanti.</div>`;
+  }
+}
 
 /**
  * Aggiunge un nuovo gioco alla collezione.
@@ -77,6 +174,7 @@ function addGame() {
     document.getElementById(id).value = "";
   });
 
+  document.getElementById("steam-results").innerHTML = "";
   saveToStorage();
   render();
 }
@@ -174,7 +272,7 @@ function render() {
 
   const tbody = document.getElementById("tbody");
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">Nessun gioco trovato.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Nessun gioco nella collezione.</td></tr>`;
   } else {
     tbody.innerHTML = list.map(g => `
       <tr>
