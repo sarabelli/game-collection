@@ -12,6 +12,27 @@
  * @property {number|null} year - Anno di uscita
  */
 
+/**
+ * Salva la collezione nel localStorage del browser.
+ * @returns {void}
+ */
+function saveToStorage() {
+  localStorage.setItem("games", JSON.stringify(games));
+  localStorage.setItem("nextId", nextId);
+}
+
+/**
+ * Carica la collezione dal localStorage del browser.
+ * @returns {void}
+ */
+function loadFromStorage() {
+  const saved = localStorage.getItem("games");
+  if (saved) {
+    games = JSON.parse(saved);
+    nextId = parseInt(localStorage.getItem("nextId")) || games.length + 1;
+  }
+}
+
 /** @type {Game[]} */
 let games = [];
 
@@ -26,7 +47,6 @@ let sortDir = 1;
 
 /**
  * Aggiunge un nuovo gioco alla collezione.
- * Legge i valori dai campi del form e valida i campi obbligatori.
  * @returns {void}
  */
 function addGame() {
@@ -57,6 +77,7 @@ function addGame() {
     document.getElementById(id).value = "";
   });
 
+  saveToStorage();
   render();
 }
 
@@ -67,12 +88,12 @@ function addGame() {
  */
 function removeGame(id) {
   games = games.filter(g => g.id !== id);
+  saveToStorage();
   render();
 }
 
 /**
  * Gestisce l'ordinamento della lista per una chiave specifica.
- * Se la chiave è già attiva inverte la direzione, altrimenti imposta la nuova chiave.
  * @param {string} key - La proprietà per cui ordinare ('title' o 'year')
  * @returns {void}
  */
@@ -140,7 +161,6 @@ function updateStats() {
 
 /**
  * Renderizza la tabella con i giochi filtrati e ordinati.
- * Aggiorna anche le statistiche e le frecce di ordinamento.
  * @returns {void}
  */
 function render() {
@@ -170,4 +190,5 @@ function render() {
   updateStats();
 }
 
+loadFromStorage();
 render();
