@@ -1,5 +1,7 @@
 let games = [];
 let nextId = 1;
+let sortKey = null;
+let sortDir = 1;
 
 function addGame() {
   const title    = document.getElementById("inp-title").value.trim();
@@ -37,13 +39,46 @@ function removeGame(id) {
   render();
 }
 
+function toggleSort(key) {
+  if (sortKey === key) {
+    sortDir *= -1;
+  } else {
+    sortKey = key;
+    sortDir = 1;
+  }
+  render();
+}
+
 function render() {
+  const q  = document.getElementById("search").value.toLowerCase();
+  const fp = document.getElementById("filter-plat").value;
+  const fg = document.getElementById("filter-genre").value;
+
+  let list = games.filter(g => {
+    const matchQ = !q || g.title.toLowerCase().includes(q) || (g.dev && g.dev.toLowerCase().includes(q));
+    const matchP = !fp || g.platform === fp;
+    const matchG = !fg || g.genre === fg;
+    return matchQ && matchP && matchG;
+  });
+
+  if (sortKey) {
+    list.sort((a, b) => {
+      let av = a[sortKey] ?? "";
+      let bv = b[sortKey] ?? "";
+      if (typeof av === "string") return av.localeCompare(bv) * sortDir;
+      return (av - bv) * sortDir;
+    });
+  }
+
+  document.getElementById("s-title").textContent = sortKey === "title" ? (sortDir === 1 ? "↑" : "↓") : "";
+  document.getElementById("s-year").textContent  = sortKey === "year"  ? (sortDir === 1 ? "↑" : "↓") : "";
+
   const tbody = document.getElementById("tbody");
 
-  if (!games.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">Nessun gioco nella collezione.</td></tr>`;
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Nessun gioco trovato.</td></tr>`;
   } else {
-    tbody.innerHTML = games.map(g => `
+    tbody.innerHTML = list.map(g => `
       <tr>
         <td style="font-weight:500">${g.title}</td>
         <td><span class="badge badge-${g.platform}">${g.platform}</span></td>
