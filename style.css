@@ -112,3 +112,47 @@ tr:hover td { background: #f9f9f7; }
 .badge-Altro  { background: #f3f4f6; color: #374151; }
 
 .empty { text-align: center; padding: 3rem; color: #999; font-size: 14px; }
+
+/* --- Steam suggestions --- */
+#steam-results {
+  margin-top: 8px;
+}
+
+.steam-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 0.5px solid #ddd;
+  border-radius: 8px;
+  margin-top: 6px;
+  cursor: pointer;
+  background: white;
+  font-size: 14px;
+}
+
+.steam-suggestion:hover {
+  background: #f0f0ee;
+}
+
+.steam-suggestion img {
+  width: 60px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.steam-suggestion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.steam-suggestion-title {
+  font-weight: 500;
+}
+
+.steam-suggestion-meta {
+  font-size: 12px;
+  color: #666;
+}
