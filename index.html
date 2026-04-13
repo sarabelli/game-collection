@@ -13,7 +13,7 @@
   <div class="form-card">
     <h2>Aggiungi un titolo</h2>
     <div class="form-grid">
-      <input id="inp-title" placeholder="Titolo *" />
+      <input id="inp-title" placeholder="Titolo *" oninput="searchSteam()" />
       <select id="inp-platform">
         <option value="">Piattaforma *</option>
         <option>PC</option>
@@ -32,6 +32,7 @@
       <input id="inp-year" type="number" placeholder="Anno (es. 2024)" min="1970" max="2030" />
       <button class="btn btn-primary" onclick="addGame()">+ Aggiungi</button>
     </div>
+    <div id="steam-results"></div>
     <div id="err" class="error-msg"></div>
   </div>
 
