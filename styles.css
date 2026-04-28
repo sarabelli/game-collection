@@ -38,6 +38,10 @@ button {
   cursor: pointer;
 }
 
+#reset-filters {
+  background: #555;
+}
+
 .list-header {
   display: flex;
   align-items: center;

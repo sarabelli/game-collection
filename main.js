@@ -7,6 +7,7 @@ const platformFilter = document.querySelector("#filter-platform");
 const genreFilter = document.querySelector("#filter-genre");
 const sortBy = document.querySelector("#sort-by");
 const searchInput = document.querySelector("#search");
+const resetFiltersButton = document.querySelector("#reset-filters");
 
 let games = loadGames();
 let filters = {
@@ -111,7 +112,9 @@ function renderGames() {
   updateFilterOptions();
 
   if (visibleGames.length === 0) {
-    gameList.innerHTML = "<p>Nessun gioco salvato.</p>";
+    gameList.innerHTML = games.length === 0
+      ? "<p>Nessun gioco salvato.</p>"
+      : "<p>Nessun risultato con i filtri attivi.</p>";
     gameCount.textContent = "0 giochi";
     return;
   }
@@ -178,6 +181,21 @@ sortBy.addEventListener("change", () => {
 
 searchInput.addEventListener("input", () => {
   filters.search = searchInput.value.trim();
+  renderGames();
+});
+
+resetFiltersButton.addEventListener("click", () => {
+  filters = {
+    search: "",
+    platform: "",
+    genre: "",
+    sort: "title-asc"
+  };
+
+  searchInput.value = "";
+  platformFilter.value = "";
+  genreFilter.value = "";
+  sortBy.value = "title-asc";
   renderGames();
 });
 
