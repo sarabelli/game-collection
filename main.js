@@ -35,6 +35,12 @@ function saveGames() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
 }
 
+function removeGame(gameId) {
+  games = games.filter((game) => game.id !== gameId);
+  saveGames();
+  renderGames();
+}
+
 function createGame(data) {
   return {
     id: crypto.randomUUID(),
@@ -64,6 +70,7 @@ function renderGames() {
       <p>Genere: ${game.genre || "-"}</p>
       <p>Anno: ${game.year || "-"}</p>
       <p>Studio: ${game.studio || "-"}</p>
+      <button type="button" data-id="${game.id}">Rimuovi</button>
     `;
     gameList.appendChild(card);
   });
@@ -87,6 +94,16 @@ form.addEventListener("submit", (event) => {
   saveGames();
   renderGames();
   form.reset();
+});
+
+gameList.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-id]");
+
+  if (!button) {
+    return;
+  }
+
+  removeGame(button.dataset.id);
 });
 
 renderGames();

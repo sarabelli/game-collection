@@ -55,3 +55,8 @@ button {
   padding: 12px;
   background: #fafafa;
 }
+
+.game-card button {
+  margin-top: 8px;
+  background: #b42318;
+}
