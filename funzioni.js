@@ -29,7 +29,22 @@ function rimuoviVideogioco(identificativo) {
 
 // Visualizza collezione
 function visualizzaVideogiochi() {
-    return videogiochi;
+    if (videogiochi.length === 0) {
+        console.log("\n📭 Nessun videogioco nella collezione.\n");
+        return;
+    }
+
+    console.log("\n🎮 ===== COLLEZIONE VIDEOGIOCHI ===== 🎮\n");
+
+    videogiochi.forEach((v, index) => {
+        console.log(`🕹️  #${index + 1}`);
+        console.log(`📌 Titolo       : ${v.titolo}`);
+        console.log(`💻 Piattaforma  : ${v.piattaforma}`);
+        console.log(`🎯 Genere       : ${v.genere}`);
+        console.log(`📅 Anno         : ${v.anno}`);
+        console.log(`🏢 Sviluppatore : ${v.sviluppatore}`);
+        console.log(`──────────────────────────────────────\n`);
+    });
 }
 
 // Filtra per piattaforma o genere
