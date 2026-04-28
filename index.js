@@ -1,90 +1,154 @@
-const prompt = require("prompt-sync")();
+/**
+ * @fileoverview CLI per gestione collezione videogiochi
+ */
+
+"use strict";
+
+const prompt = require("prompt-sync")({ sigint: true });
 
 const {
     aggiungiVideogioco,
     rimuoviVideogioco,
     visualizzaVideogiochi,
-    filtraVideogiochi,
-    ordinaVideogiochi,
-    cercaVideogiochi
+    cercaVideogiochi,
+    ordinaVideogiochi
 } = require("./funzioni");
+
+// ─── Utility ─────────────────────────────────────────────
 
 function pausa() {
     prompt("\n⏸️ Premi INVIO per continuare...");
 }
 
+function chiedi(domanda, obbligatorio = false) {
+    let valore;
+
+    do {
+        valore = (prompt(domanda) || "").trim();
+
+        if (obbligatorio && !valore) {
+            console.log("⚠️ Campo obbligatorio, riprova.");
+        }
+    } while (obbligatorio && !valore);
+
+    return valore;
+}
+
+function separatore() {
+    console.log("\n" + "─".repeat(40) + "\n");
+}
+
+// ─── Menu ───────────────────────────────────────────────
+
+function mostraMenu() {
+    console.clear();
+    console.log("╔════════════════════════════╗");
+    console.log("║ 🎮 GESTIONE VIDEOGIOCHI   ║");
+    console.log("╠════════════════════════════╣");
+    console.log("║ 1 - Aggiungi gioco        ║");
+    console.log("║ 2 - Rimuovi gioco         ║");
+    console.log("║ 3 - Visualizza collezione ║");
+    console.log("║ 4 - Cerca gioco           ║");
+    console.log("║ 5 - Ordina (titolo/anno)  ║");
+    console.log("║ 0 - Esci                  ║");
+    console.log("╚════════════════════════════╝");
+
+    return (prompt("\n👉 Scelta: ") || "").trim();
+}
+
+// ─── Azioni ─────────────────────────────────────────────
+
+function azioneAggiungi() {
+    console.clear();
+    console.log("── AGGIUNGI VIDEOGIOCO ──\n");
+
+    const titolo = chiedi("🎮 Titolo: ", true);
+    const piattaforma = chiedi("💻 Piattaforma: ", true);
+    const genere = chiedi("🎯 Genere: ");
+    const annoStr = chiedi("📅 Anno: ");
+    const sviluppatore = chiedi("🏢 Sviluppatore: ");
+
+    const anno = annoStr ? parseInt(annoStr, 10) : null;
+
+    aggiungiVideogioco(titolo, piattaforma, genere, anno, sviluppatore);
+
+    pausa();
+}
+
+function azioneRimuovi() {
+    console.clear();
+    console.log("── RIMUOVI VIDEOGIOCO ──\n");
+
+    const titolo = chiedi("🎮 Titolo da rimuovere: ", true);
+
+    rimuoviVideogioco(titolo);
+
+    pausa();
+}
+
+function azioneVisualizza() {
+    console.clear();
+    visualizzaVideogiochi();
+    pausa();
+}
+
+function azioneCerca() {
+    console.clear();
+    console.log("── CERCA VIDEOGIOCO ──\n");
+
+    const testo = chiedi("🔎 Cerca: ", true);
+
+    cercaVideogiochi(testo);
+
+    pausa();
+}
+
+function azioneOrdina() {
+    console.clear();
+    console.log("── ORDINA COLLEZIONE ──\n");
+
+    console.log("Opzioni: titolo | anno\n");
+
+    const criterio = chiedi("📊 Ordina per: ", true);
+
+    ordinaVideogiochi(criterio);
+
+    pausa();
+}
+
+// ─── Loop principale ────────────────────────────────────
+
 function menu() {
-    let uscita = false;
-
-    while (!uscita) {
-        console.clear();
-
-        const scelta = prompt(
-`🎮 GESTIONE VIDEOGIOCHI
-
-1 - Aggiungi videogioco
-2 - Rimuovi videogioco
-3 - Visualizza collezione
-4 - Filtra videogiochi
-5 - Ordina videogiochi
-6 - Cerca videogioco
-0 - Esci
-
-Scegli un'opzione: `
-        );
+    while (true) {
+        const scelta = mostraMenu();
 
         switch (scelta) {
             case "1":
-                const titolo = prompt("Titolo: ");
-                const piattaforma = prompt("Piattaforma: ");
-                const genere = prompt("Genere: ");
-                const anno = parseInt(prompt("Anno: "));
-                const sviluppatore = prompt("Sviluppatore: ");
-
-                aggiungiVideogioco(titolo, piattaforma, genere, anno, sviluppatore);
-                console.log("\n✔ Videogioco aggiunto!");
-                pausa();
+                azioneAggiungi();
                 break;
 
             case "2":
-                const id = prompt("ID o Titolo da rimuovere: ");
-                const rimosso = rimuoviVideogioco(id);
-
-                console.log(rimosso ? "\n✔ Rimosso!" : "\n❌ Non trovato");
-                pausa();
+                azioneRimuovi();
                 break;
 
             case "3":
-                visualizzaVideogiochi();
-                pausa();
+                azioneVisualizza();
                 break;
 
             case "4":
-                const chiave = prompt("piattaforma o genere: ");
-                const valore = prompt("Valore: ");
-                console.table(filtraVideogiochi(chiave, valore));
-                pausa();
+                azioneCerca();
                 break;
 
             case "5":
-                const criterio = prompt("titolo o anno: ");
-                console.table(ordinaVideogiochi(criterio));
-                pausa();
-                break;
-
-            case "6":
-                const ricerca = prompt("Cerca: ");
-                console.table(cercaVideogiochi(ricerca));
-                pausa();
+                azioneOrdina();
                 break;
 
             case "0":
-                uscita = true;
-                console.log("\n👋 Uscita dal programma");
-                break;
+                console.log("\n👋 Ciao!\n");
+                process.exit(0);
 
             default:
-                console.log("\n❌ Scelta non valida");
+                console.log("\n❌ Scelta non valida.");
                 pausa();
         }
     }

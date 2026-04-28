@@ -1,83 +1,78 @@
+"use strict";
+
 let videogiochi = [];
 
 function aggiungiVideogioco(titolo, piattaforma, genere, anno, sviluppatore) {
-    const gioco = {
-        id: Date.now(),
-        titolo,
-        piattaforma,
-        genere,
-        anno,
-        sviluppatore
-    };
+    if (!titolo || !piattaforma) {
+        console.log("❌ Titolo e piattaforma sono obbligatori.");
+        return;
+    }
 
-    videogiochi.push(gioco);
-    return gioco;
+    videogiochi.push({ titolo, piattaforma, genere, anno, sviluppatore });
+    console.log(`✅ "${titolo}" aggiunto!`);
 }
 
-function rimuoviVideogioco(identificativo) {
-    const lunghezzaIniziale = videogiochi.length;
+function rimuoviVideogioco(titolo) {
+    const prima = videogiochi.length;
+    videogiochi = videogiochi.filter(v => v.titolo.toLowerCase() !== titolo.toLowerCase());
 
-    videogiochi = videogiochi.filter(v =>
-        v.id != identificativo &&
-        v.titolo.toLowerCase() !== identificativo.toLowerCase()
-    );
-
-    return videogiochi.length < lunghezzaIniziale;
+    if (videogiochi.length < prima) {
+        console.log(`✅ "${titolo}" rimosso!`);
+    } else {
+        console.log(`❌ "${titolo}" non trovato.`);
+    }
 }
 
 function visualizzaVideogiochi() {
-    console.clear();
-
     if (videogiochi.length === 0) {
         console.log("\n📭 Nessun videogioco nella collezione.\n");
         return;
     }
 
-    console.log("\n🎮 ===== COLLEZIONE VIDEOGIOCHI ===== 🎮\n");
+    console.log(`\n🎮 COLLEZIONE (${videogiochi.length} giochi)\n`);
 
-    videogiochi.forEach((v, index) => {
-        console.log(`🕹️  #${index + 1}`);
-        console.log(`📌 Titolo       : ${v.titolo}`);
-        console.log(`💻 Piattaforma  : ${v.piattaforma}`);
-        console.log(`🎯 Genere       : ${v.genere}`);
-        console.log(`📅 Anno         : ${v.anno}`);
-        console.log(`🏢 Sviluppatore : ${v.sviluppatore}`);
-        console.log(`──────────────────────────────────────\n`);
+    videogiochi.forEach((v, i) => {
+        console.log(`#${i + 1} ${v.titolo}`);
+        console.log(`   Piattaforma  : ${v.piattaforma}`);
+        console.log(`   Genere       : ${v.genere       || "—"}`);
+        console.log(`   Anno         : ${v.anno         || "—"}`);
+        console.log(`   Sviluppatore : ${v.sviluppatore || "—"}`);
+        console.log("");
     });
 }
 
-function filtraVideogiochi(chiave, valore) {
-    return videogiochi.filter(v =>
-        v[chiave] && v[chiave].toLowerCase() === valore.toLowerCase()
+function cercaVideogiochi(testo) {
+    const risultati = videogiochi.filter(v =>
+        v.titolo.toLowerCase().includes(testo.toLowerCase()) ||
+        (v.sviluppatore || "").toLowerCase().includes(testo.toLowerCase())
     );
+
+    if (risultati.length === 0) {
+        console.log("📭 Nessun risultato.");
+    } else {
+        risultati.forEach((v, i) => {
+            console.log(`#${i + 1} ${v.titolo} — ${v.piattaforma}`);
+        });
+    }
 }
 
 function ordinaVideogiochi(criterio) {
-    const ordinati = [...videogiochi];
-
     if (criterio === "titolo") {
-        ordinati.sort((a, b) => a.titolo.localeCompare(b.titolo));
+        videogiochi.sort((a, b) => a.titolo.localeCompare(b.titolo, "it"));
+    } else if (criterio === "anno") {
+        videogiochi.sort((a, b) => (a.anno || 0) - (b.anno || 0));
+    } else {
+        console.log("❌ Criterio non valido. Usa: titolo oppure anno.");
+        return;
     }
 
-    if (criterio === "anno") {
-        ordinati.sort((a, b) => a.anno - b.anno);
-    }
-
-    return ordinati;
-}
-
-function cercaVideogiochi(testo) {
-    return videogiochi.filter(v =>
-        v.titolo.toLowerCase().includes(testo.toLowerCase()) ||
-        v.sviluppatore.toLowerCase().includes(testo.toLowerCase())
-    );
+    console.log(`✅ Collezione ordinata per ${criterio}.`);
 }
 
 module.exports = {
     aggiungiVideogioco,
     rimuoviVideogioco,
     visualizzaVideogiochi,
-    filtraVideogiochi,
-    ordinaVideogiochi,
-    cercaVideogiochi
+    cercaVideogiochi,
+    ordinaVideogiochi
 };
