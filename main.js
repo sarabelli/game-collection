@@ -1,15 +1,17 @@
 const CHIAVE_STORAGE="game-collection-items";
 
 const modulo=document.querySelector("#game-form");
-const listaGiochi=document.querySelector("#game-list");
-const conteggioGiochi=document.querySelector("#game-count");
+const lista=document.querySelector("#game-list");
+const conteggio=document.querySelector("#game-count");
+
 const filtroPiattaforma=document.querySelector("#filter-platform");
 const filtroGenere=document.querySelector("#filter-genre");
-const ordinamento=document.querySelector("#sort-by");
-const ricercaInput=document.querySelector("#search");
-const bottoneResetFiltri=document.querySelector("#reset-filters");
+const ordine=document.querySelector("#sort-by");
+const ricerca=document.querySelector("#search");
+const reset=document.querySelector("#reset-filters");
 
-let giochi=caricaGiochi();
+let giochi=JSON.parse(localStorage.getItem(CHIAVE_STORAGE))||[];
+
 let filtri={
   ricerca:"",
   piattaforma:"",
@@ -17,192 +19,107 @@ let filtri={
   ordine:"title-asc"
 };
 
-function caricaGiochi(){
-  const giochiSalvati=localStorage.getItem(CHIAVE_STORAGE);
-
-  if(!giochiSalvati){
-    return[];
-  }
-
-  try{
-    const giochiParsi=JSON.parse(giochiSalvati);
-    return Array.isArray(giochiParsi)?giochiParsi:[];
-  }catch(error){
-    return[];
-  }
-}
-
-function salvaGiochi(){
+function salva(){
   localStorage.setItem(CHIAVE_STORAGE,JSON.stringify(giochi));
 }
 
-function rimuoviGioco(idGioco){
-  giochi=giochi.filter((gioco)=>gioco.id!==idGioco);
-  salvaGiochi();
-  renderGiochi();
-}
-
-function creaGioco(dati){
+function crea(d){
   return{
     id:crypto.randomUUID(),
-    titolo:dati.title.trim(),
-    piattaforma:dati.platform,
-    genere:dati.genre.trim(),
-    anno:dati.year.trim(),
-    studio:dati.studio.trim()
+    titolo:d.title,
+    piattaforma:d.platform,
+    genere:d.genre,
+    anno:d.year,
+    studio:d.studio
   };
 }
 
-function valoriUnici(chiave){
-  return[...new Set(giochi.map((gioco)=>gioco[chiave]).filter(Boolean))].sort();
+function filtrati(){
+  return giochi
+    .filter(g=>{
+      const r=filtri.ricerca.toLowerCase();
+
+      return(
+        (!filtri.piattaforma||g.piattaforma===filtri.piattaforma)&&
+        (!filtri.genere||g.genere===filtri.genere)&&
+        (!r||g.titolo.toLowerCase().includes(r))
+      );
+    })
+    .sort((a,b)=>{
+      if(filtri.ordine==="title-desc") return b.titolo.localeCompare(a.titolo);
+      if(filtri.ordine==="year-asc") return (a.anno||0)-(b.anno||0);
+      if(filtri.ordine==="year-desc") return (b.anno||0)-(a.anno||0);
+      return a.titolo.localeCompare(b.titolo);
+    });
 }
 
-function aggiornaOpzioniFiltri(){
-  const piattaforme=valoriUnici("piattaforma");
-  const generi=valoriUnici("genere");
+function render(){
+  const list=filtrati();
 
-  filtroPiattaforma.innerHTML='<option value="">Tutte le piattaforme</option>';
-  filtroGenere.innerHTML='<option value="">Tutti i generi</option>';
+  lista.innerHTML=list.length
+    ?list.map(g=>`
+      <article class="game-card">
+        <h3>${g.titolo}</h3>
+        <p>${g.piattaforma}</p>
+        <button data-id="${g.id}">Rimuovi</button>
+      </article>
+    `).join("")
+    :"<p>Nessun gioco</p>";
 
-  piattaforme.forEach((piattaforma)=>{
-    filtroPiattaforma.innerHTML+=`<option value="${piattaforma}">${piattaforma}</option>`;
-  });
-
-  generi.forEach((genere)=>{
-    filtroGenere.innerHTML+=`<option value="${genere}">${genere}</option>`;
-  });
-
-  filtroPiattaforma.value=filtri.piattaforma;
-  filtroGenere.value=filtri.genere;
+  conteggio.textContent=`${list.length} giochi`;
 }
 
-function giochiVisibili(){
-  const filtrati=giochi.filter((gioco)=>{
-    const valoreRicerca=filtri.ricerca.toLowerCase();
+modulo.addEventListener("submit",(e)=>{
+  e.preventDefault();
 
-    const matchPiattaforma=!filtri.piattaforma||gioco.platform===filtri.piattaforma;
-    const matchGenere=!filtri.genere||gioco.genre===filtri.genere;
+  const d=new FormData(modulo);
 
-    const matchRicerca=
-      !valoreRicerca||
-      gioco.titolo.toLowerCase().includes(valoreRicerca)||
-      gioco.studio.toLowerCase().includes(valoreRicerca);
+  giochi.unshift(crea({
+    title:d.get("title"),
+    platform:d.get("platform"),
+    genre:d.get("genre"),
+    year:d.get("year"),
+    studio:d.get("studio")
+  }));
 
-    return matchPiattaforma&&matchGenere&&matchRicerca;
-  });
-
-  return filtrati.sort((a,b)=>{
-    if(filtri.ordine==="title-desc"){
-      return b.titolo.localeCompare(a.titolo);
-    }
-
-    if(filtri.ordine==="year-asc"){
-      return Number(a.anno||0)-Number(b.anno||0);
-    }
-
-    if(filtri.ordine==="year-desc"){
-      return Number(b.anno||0)-Number(a.anno||0);
-    }
-
-    return a.titolo.localeCompare(b.titolo);
-  });
-}
-
-function renderGiochi(){
-  const giochiVisibiliLista=giochiVisibili();
-  listaGiochi.innerHTML="";
-  aggiornaOpzioniFiltri();
-
-  if(giochiVisibiliLista.length===0){
-    listaGiochi.innerHTML=
-      giochi.length===0
-        ?"<p>Nessun gioco salvato.</p>"
-        :"<p>Nessun risultato con i filtri attivi.</p>";
-
-    conteggioGiochi.textContent="0 giochi";
-    return;
-  }
-
-  giochiVisibiliLista.forEach((gioco)=>{
-    const card=document.createElement("article");
-    card.className="game-card";
-
-    card.innerHTML=`
-      <h3>${gioco.titolo}</h3>
-      <p>Piattaforma: ${gioco.platform}</p>
-      <p>Genere: ${gioco.genere||"-"}</p>
-      <p>Anno: ${gioco.anno||"-"}</p>
-      <p>Studio: ${gioco.studio||"-"}</p>
-      <button type="button" data-id="${gioco.id}">Rimuovi</button>
-    `;
-
-    listaGiochi.appendChild(card);
-  });
-
-  conteggioGiochi.textContent=`${giochiVisibiliLista.length} giochi`;
-}
-
-modulo.addEventListener("submit",(evento)=>{
-  evento.preventDefault();
-
-  const datiForm=new FormData(modulo);
-
-  const nuovoGioco=creaGioco({
-    title:datiForm.get("title")||"",
-    platform:datiForm.get("platform")||"",
-    genre:datiForm.get("genre")||"",
-    year:datiForm.get("year")||"",
-    studio:datiForm.get("studio")||""
-  });
-
-  giochi.unshift(nuovoGioco);
-  salvaGiochi();
-  renderGiochi();
+  salva();
+  render();
   modulo.reset();
 });
 
-listaGiochi.addEventListener("click",(evento)=>{
-  const bottone=evento.target.closest("button[data-id]");
+lista.addEventListener("click",(e)=>{
+  const id=e.target.dataset.id;
+  if(!id)return;
 
-  if(!bottone)return;
-
-  rimuoviGioco(bottone.dataset.id);
+  giochi=giochi.filter(g=>g.id!==id);
+  salva();
+  render();
 });
 
-filtroPiattaforma.addEventListener("change",()=>{
-  filtri.piattaforma=filtroPiattaforma.value;
-  renderGiochi();
-});
+filtroPiattaforma.onchange=e=>{
+  filtri.piattaforma=e.target.value;
+  render();
+};
 
-filtroGenere.addEventListener("change",()=>{
-  filtri.genere=filtroGenere.value;
-  renderGiochi();
-});
+filtroGenere.onchange=e=>{
+  filtri.genere=e.target.value;
+  render();
+};
 
-ordinamento.addEventListener("change",()=>{
-  filtri.ordine=ordinamento.value;
-  renderGiochi();
-});
+ordine.onchange=e=>{
+  filtri.ordine=e.target.value;
+  render();
+};
 
-ricercaInput.addEventListener("input",()=>{
-  filtri.ricerca=ricercaInput.value.trim();
-  renderGiochi();
-});
+ricerca.oninput=e=>{
+  filtri.ricerca=e.target.value;
+  render();
+};
 
-bottoneResetFiltri.addEventListener("click",()=>{
-  filtri={
-    ricerca:"",
-    piattaforma:"",
-    genere:"",
-    ordine:"title-asc"
-  };
+reset.onclick=()=>{
+  filtri={ricerca:"",piattaforma:"",genere:"",ordine:"title-asc"};
+  modulo.reset();
+  render();
+};
 
-  ricercaInput.value="";
-  filtroPiattaforma.value="";
-  filtroGenere.value="";
-  ordinamento.value="title-asc";
-
-  renderGiochi();
-});
-
-renderGiochi();
+render();
