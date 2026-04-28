@@ -6,58 +6,72 @@
   <title>Game Collection</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <main class="app">
+
     <header>
       <h1>Game Collection</h1>
       <p>Catalogo locale per la tua collezione di videogiochi.</p>
     </header>
 
+    <!-- FORM -->
     <section class="panel">
       <h2>Aggiungi gioco</h2>
+
       <form id="game-form">
-        <input id="title" name="title" type="text" placeholder="Titolo" required>
-        <select id="platform" name="platform" required>
+        <input name="title" type="text" placeholder="Titolo" required>
+
+        <select name="platform" required>
           <option value="">Piattaforma</option>
           <option value="PC">PC</option>
           <option value="PS5">PS5</option>
           <option value="Xbox">Xbox</option>
           <option value="Switch">Switch</option>
         </select>
-        <input id="genre" name="genre" type="text" placeholder="Genere">
-        <input id="year" name="year" type="number" placeholder="Anno">
-        <input id="studio" name="studio" type="text" placeholder="Studio">
+
+        <input name="genre" type="text" placeholder="Genere">
+        <input name="year" type="number" placeholder="Anno">
+        <input name="studio" type="text" placeholder="Studio">
+
         <button type="submit">Aggiungi</button>
       </form>
     </section>
 
+    <!-- CONTROLLI -->
     <section class="panel">
       <h2>Controlli</h2>
+
       <div class="controls">
         <input id="search" type="text" placeholder="Cerca per titolo o studio">
+
         <select id="filter-platform">
           <option value="">Tutte le piattaforme</option>
         </select>
+
         <select id="filter-genre">
           <option value="">Tutti i generi</option>
         </select>
+
         <select id="sort-by">
           <option value="title-asc">Titolo A-Z</option>
           <option value="title-desc">Titolo Z-A</option>
           <option value="year-asc">Anno crescente</option>
           <option value="year-desc">Anno decrescente</option>
         </select>
+
         <button id="reset-filters" type="button">Reset filtri</button>
       </div>
     </section>
-
     <section class="panel">
       <div class="list-header">
         <h2>Collezione</h2>
         <span id="game-count">0 giochi</span>
       </div>
+
       <div id="game-list" class="game-list"></div>
     </section>
+
   </main>
 
   <script src="main.js"></script>

@@ -1,202 +1,208 @@
-const STORAGE_KEY = "game-collection-items";
+const CHIAVE_STORAGE="game-collection-items";
 
-const form = document.querySelector("#game-form");
-const gameList = document.querySelector("#game-list");
-const gameCount = document.querySelector("#game-count");
-const platformFilter = document.querySelector("#filter-platform");
-const genreFilter = document.querySelector("#filter-genre");
-const sortBy = document.querySelector("#sort-by");
-const searchInput = document.querySelector("#search");
-const resetFiltersButton = document.querySelector("#reset-filters");
+const modulo=document.querySelector("#game-form");
+const listaGiochi=document.querySelector("#game-list");
+const conteggioGiochi=document.querySelector("#game-count");
+const filtroPiattaforma=document.querySelector("#filter-platform");
+const filtroGenere=document.querySelector("#filter-genre");
+const ordinamento=document.querySelector("#sort-by");
+const ricercaInput=document.querySelector("#search");
+const bottoneResetFiltri=document.querySelector("#reset-filters");
 
-let games = loadGames();
-let filters = {
-  search: "",
-  platform: "",
-  genre: "",
-  sort: "title-asc"
+let giochi=caricaGiochi();
+let filtri={
+  ricerca:"",
+  piattaforma:"",
+  genere:"",
+  ordine:"title-asc"
 };
 
-function loadGames() {
-  const savedGames = localStorage.getItem(STORAGE_KEY);
+function caricaGiochi(){
+  const giochiSalvati=localStorage.getItem(CHIAVE_STORAGE);
 
-  if (!savedGames) {
-    return [];
+  if(!giochiSalvati){
+    return[];
   }
 
-  try {
-    const parsedGames = JSON.parse(savedGames);
-    return Array.isArray(parsedGames) ? parsedGames : [];
-  } catch (error) {
-    return [];
+  try{
+    const giochiParsi=JSON.parse(giochiSalvati);
+    return Array.isArray(giochiParsi)?giochiParsi:[];
+  }catch(error){
+    return[];
   }
 }
 
-function saveGames() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+function salvaGiochi(){
+  localStorage.setItem(CHIAVE_STORAGE,JSON.stringify(giochi));
 }
 
-function removeGame(gameId) {
-  games = games.filter((game) => game.id !== gameId);
-  saveGames();
-  renderGames();
+function rimuoviGioco(idGioco){
+  giochi=giochi.filter((gioco)=>gioco.id!==idGioco);
+  salvaGiochi();
+  renderGiochi();
 }
 
-function createGame(data) {
-  return {
-    id: crypto.randomUUID(),
-    title: data.title.trim(),
-    platform: data.platform,
-    genre: data.genre.trim(),
-    year: data.year.trim(),
-    studio: data.studio.trim()
+function creaGioco(dati){
+  return{
+    id:crypto.randomUUID(),
+    titolo:dati.title.trim(),
+    piattaforma:dati.platform,
+    genere:dati.genre.trim(),
+    anno:dati.year.trim(),
+    studio:dati.studio.trim()
   };
 }
 
-function getUniqueValues(key) {
-  return [...new Set(games.map((game) => game[key]).filter(Boolean))].sort();
+function valoriUnici(chiave){
+  return[...new Set(giochi.map((gioco)=>gioco[chiave]).filter(Boolean))].sort();
 }
 
-function updateFilterOptions() {
-  const platforms = getUniqueValues("platform");
-  const genres = getUniqueValues("genre");
+function aggiornaOpzioniFiltri(){
+  const piattaforme=valoriUnici("piattaforma");
+  const generi=valoriUnici("genere");
 
-  platformFilter.innerHTML = '<option value="">Tutte le piattaforme</option>';
-  genreFilter.innerHTML = '<option value="">Tutti i generi</option>';
+  filtroPiattaforma.innerHTML='<option value="">Tutte le piattaforme</option>';
+  filtroGenere.innerHTML='<option value="">Tutti i generi</option>';
 
-  platforms.forEach((platform) => {
-    platformFilter.innerHTML += `<option value="${platform}">${platform}</option>`;
+  piattaforme.forEach((piattaforma)=>{
+    filtroPiattaforma.innerHTML+=`<option value="${piattaforma}">${piattaforma}</option>`;
   });
 
-  genres.forEach((genre) => {
-    genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
+  generi.forEach((genere)=>{
+    filtroGenere.innerHTML+=`<option value="${genere}">${genere}</option>`;
   });
 
-  platformFilter.value = filters.platform;
-  genreFilter.value = filters.genre;
+  filtroPiattaforma.value=filtri.piattaforma;
+  filtroGenere.value=filtri.genere;
 }
 
-function getVisibleGames() {
-  const filteredGames = games.filter((game) => {
-    const searchValue = filters.search.toLowerCase();
-    const matchesPlatform = !filters.platform || game.platform === filters.platform;
-    const matchesGenre = !filters.genre || game.genre === filters.genre;
-    const matchesSearch =
-      !searchValue ||
-      game.title.toLowerCase().includes(searchValue) ||
-      game.studio.toLowerCase().includes(searchValue);
+function giochiVisibili(){
+  const filtrati=giochi.filter((gioco)=>{
+    const valoreRicerca=filtri.ricerca.toLowerCase();
 
-    return matchesPlatform && matchesGenre && matchesSearch;
+    const matchPiattaforma=!filtri.piattaforma||gioco.platform===filtri.piattaforma;
+    const matchGenere=!filtri.genere||gioco.genre===filtri.genere;
+
+    const matchRicerca=
+      !valoreRicerca||
+      gioco.titolo.toLowerCase().includes(valoreRicerca)||
+      gioco.studio.toLowerCase().includes(valoreRicerca);
+
+    return matchPiattaforma&&matchGenere&&matchRicerca;
   });
 
-  return filteredGames.sort((firstGame, secondGame) => {
-    if (filters.sort === "title-desc") {
-      return secondGame.title.localeCompare(firstGame.title);
+  return filtrati.sort((a,b)=>{
+    if(filtri.ordine==="title-desc"){
+      return b.titolo.localeCompare(a.titolo);
     }
 
-    if (filters.sort === "year-asc") {
-      return Number(firstGame.year || 0) - Number(secondGame.year || 0);
+    if(filtri.ordine==="year-asc"){
+      return Number(a.anno||0)-Number(b.anno||0);
     }
 
-    if (filters.sort === "year-desc") {
-      return Number(secondGame.year || 0) - Number(firstGame.year || 0);
+    if(filtri.ordine==="year-desc"){
+      return Number(b.anno||0)-Number(a.anno||0);
     }
 
-    return firstGame.title.localeCompare(secondGame.title);
+    return a.titolo.localeCompare(b.titolo);
   });
 }
 
-function renderGames() {
-  const visibleGames = getVisibleGames();
-  gameList.innerHTML = "";
-  updateFilterOptions();
+function renderGiochi(){
+  const giochiVisibiliLista=giochiVisibili();
+  listaGiochi.innerHTML="";
+  aggiornaOpzioniFiltri();
 
-  if (visibleGames.length === 0) {
-    gameList.innerHTML = games.length === 0
-      ? "<p>Nessun gioco salvato.</p>"
-      : "<p>Nessun risultato con i filtri attivi.</p>";
-    gameCount.textContent = "0 giochi";
+  if(giochiVisibiliLista.length===0){
+    listaGiochi.innerHTML=
+      giochi.length===0
+        ?"<p>Nessun gioco salvato.</p>"
+        :"<p>Nessun risultato con i filtri attivi.</p>";
+
+    conteggioGiochi.textContent="0 giochi";
     return;
   }
 
-  visibleGames.forEach((game) => {
-    const card = document.createElement("article");
-    card.className = "game-card";
-    card.innerHTML = `
-      <h3>${game.title}</h3>
-      <p>Piattaforma: ${game.platform}</p>
-      <p>Genere: ${game.genre || "-"}</p>
-      <p>Anno: ${game.year || "-"}</p>
-      <p>Studio: ${game.studio || "-"}</p>
-      <button type="button" data-id="${game.id}">Rimuovi</button>
+  giochiVisibiliLista.forEach((gioco)=>{
+    const card=document.createElement("article");
+    card.className="game-card";
+
+    card.innerHTML=`
+      <h3>${gioco.titolo}</h3>
+      <p>Piattaforma: ${gioco.platform}</p>
+      <p>Genere: ${gioco.genere||"-"}</p>
+      <p>Anno: ${gioco.anno||"-"}</p>
+      <p>Studio: ${gioco.studio||"-"}</p>
+      <button type="button" data-id="${gioco.id}">Rimuovi</button>
     `;
-    gameList.appendChild(card);
+
+    listaGiochi.appendChild(card);
   });
 
-  gameCount.textContent = `${visibleGames.length} giochi`;
+  conteggioGiochi.textContent=`${giochiVisibiliLista.length} giochi`;
 }
 
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
+modulo.addEventListener("submit",(evento)=>{
+  evento.preventDefault();
 
-  const formData = new FormData(form);
-  const newGame = createGame({
-    title: formData.get("title") || "",
-    platform: formData.get("platform") || "",
-    genre: formData.get("genre") || "",
-    year: formData.get("year") || "",
-    studio: formData.get("studio") || ""
+  const datiForm=new FormData(modulo);
+
+  const nuovoGioco=creaGioco({
+    title:datiForm.get("title")||"",
+    platform:datiForm.get("platform")||"",
+    genre:datiForm.get("genre")||"",
+    year:datiForm.get("year")||"",
+    studio:datiForm.get("studio")||""
   });
 
-  games.unshift(newGame);
-  saveGames();
-  renderGames();
-  form.reset();
+  giochi.unshift(nuovoGioco);
+  salvaGiochi();
+  renderGiochi();
+  modulo.reset();
 });
 
-gameList.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-id]");
+listaGiochi.addEventListener("click",(evento)=>{
+  const bottone=evento.target.closest("button[data-id]");
 
-  if (!button) {
-    return;
-  }
+  if(!bottone)return;
 
-  removeGame(button.dataset.id);
+  rimuoviGioco(bottone.dataset.id);
 });
 
-platformFilter.addEventListener("change", () => {
-  filters.platform = platformFilter.value;
-  renderGames();
+filtroPiattaforma.addEventListener("change",()=>{
+  filtri.piattaforma=filtroPiattaforma.value;
+  renderGiochi();
 });
 
-genreFilter.addEventListener("change", () => {
-  filters.genre = genreFilter.value;
-  renderGames();
+filtroGenere.addEventListener("change",()=>{
+  filtri.genere=filtroGenere.value;
+  renderGiochi();
 });
 
-sortBy.addEventListener("change", () => {
-  filters.sort = sortBy.value;
-  renderGames();
+ordinamento.addEventListener("change",()=>{
+  filtri.ordine=ordinamento.value;
+  renderGiochi();
 });
 
-searchInput.addEventListener("input", () => {
-  filters.search = searchInput.value.trim();
-  renderGames();
+ricercaInput.addEventListener("input",()=>{
+  filtri.ricerca=ricercaInput.value.trim();
+  renderGiochi();
 });
 
-resetFiltersButton.addEventListener("click", () => {
-  filters = {
-    search: "",
-    platform: "",
-    genre: "",
-    sort: "title-asc"
+bottoneResetFiltri.addEventListener("click",()=>{
+  filtri={
+    ricerca:"",
+    piattaforma:"",
+    genere:"",
+    ordine:"title-asc"
   };
 
-  searchInput.value = "";
-  platformFilter.value = "";
-  genreFilter.value = "";
-  sortBy.value = "title-asc";
-  renderGames();
+  ricercaInput.value="";
+  filtroPiattaforma.value="";
+  filtroGenere.value="";
+  ordinamento.value="title-asc";
+
+  renderGiochi();
 });
 
-renderGames();
+renderGiochi();

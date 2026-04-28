@@ -1,66 +1,66 @@
-body {
-  margin: 0;
-  background: #f4f4f4;
-  color: #222;
-  font-family: Arial, sans-serif;
+body{
+  margin:0;
+  background:#f4f4f4;
+  color:#222;
+  font-family:Arial,sans-serif;
 }
 
-.app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px;
+.app{
+  max-width:900px;
+  margin:0 auto;
+  padding:24px;
 }
 
-.panel {
-  background: #fff;
-  padding: 16px;
-  margin-bottom: 16px;
-  border: 1px solid #ddd;
+.panel{
+  background:#fff;
+  padding:16px;
+  margin-bottom:16px;
+  border:1px solid #ddd;
 }
 
 #game-form,
-.controls {
-  display: grid;
-  gap: 10px;
+.controls{
+  display:grid;
+  gap:10px;
 }
 
 input,
 select,
-button {
-  padding: 10px;
-  font: inherit;
+button{
+  padding:10px;
+  font:inherit;
 }
 
-button {
-  border: 0;
-  background: #222;
-  color: #fff;
-  cursor: pointer;
+button{
+  border:0;
+  background:#222;
+  color:#fff;
+  cursor:pointer;
 }
 
-#reset-filters {
-  background: #555;
+#reset-filters{
+  background:#555;
 }
 
-.list-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.list-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
 }
 
-.game-list {
-  display: grid;
-  gap: 12px;
+.game-list{
+  display:grid;
+  gap:12px;
 }
 
-.game-card {
-  border: 1px solid #ddd;
-  padding: 12px;
-  background: #fafafa;
+.game-card{
+  border:1px solid #ddd;
+  padding:12px;
+  background:#fafafa;
 }
 
-.game-card button {
-  margin-top: 8px;
-  background: #b42318;
+.game-card button{
+  margin-top:8px;
+  background:#b42318;
 }
