@@ -1,1 +1,63 @@
-console.log("Hello from main.js");
+const STORAGE_KEY = "game-collection-items";
+
+const form = document.querySelector("#game-form");
+const gameList = document.querySelector("#game-list");
+const gameCount = document.querySelector("#game-count");
+const platformFilter = document.querySelector("#filter-platform");
+const genreFilter = document.querySelector("#filter-genre");
+const sortBy = document.querySelector("#sort-by");
+const searchInput = document.querySelector("#search");
+
+let games = loadGames();
+let filters = {
+  search: "",
+  platform: "",
+  genre: "",
+  sort: "title-asc"
+};
+
+function loadGames() {
+  const savedGames = localStorage.getItem(STORAGE_KEY);
+
+  if (!savedGames) {
+    return [];
+  }
+
+  try {
+    const parsedGames = JSON.parse(savedGames);
+    return Array.isArray(parsedGames) ? parsedGames : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveGames() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+}
+
+function renderGames() {
+  gameList.innerHTML = "";
+
+  if (games.length === 0) {
+    gameList.innerHTML = "<p>Nessun gioco salvato.</p>";
+    gameCount.textContent = "0 giochi";
+    return;
+  }
+
+  games.forEach((game) => {
+    const card = document.createElement("article");
+    card.className = "game-card";
+    card.innerHTML = `
+      <h3>${game.title}</h3>
+      <p>Piattaforma: ${game.platform}</p>
+      <p>Genere: ${game.genre || "-"}</p>
+      <p>Anno: ${game.year || "-"}</p>
+      <p>Studio: ${game.studio || "-"}</p>
+    `;
+    gameList.appendChild(card);
+  });
+
+  gameCount.textContent = `${games.length} giochi`;
+}
+
+renderGames();
