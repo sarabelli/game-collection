@@ -52,16 +52,49 @@ function createGame(data) {
   };
 }
 
-function renderGames() {
-  gameList.innerHTML = "";
+function getUniqueValues(key) {
+  return [...new Set(games.map((game) => game[key]).filter(Boolean))].sort();
+}
 
-  if (games.length === 0) {
+function updateFilterOptions() {
+  const platforms = getUniqueValues("platform");
+  const genres = getUniqueValues("genre");
+
+  platformFilter.innerHTML = '<option value="">Tutte le piattaforme</option>';
+  genreFilter.innerHTML = '<option value="">Tutti i generi</option>';
+
+  platforms.forEach((platform) => {
+    platformFilter.innerHTML += `<option value="${platform}">${platform}</option>`;
+  });
+
+  genres.forEach((genre) => {
+    genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
+  });
+
+  platformFilter.value = filters.platform;
+  genreFilter.value = filters.genre;
+}
+
+function getVisibleGames() {
+  return games.filter((game) => {
+    const matchesPlatform = !filters.platform || game.platform === filters.platform;
+    const matchesGenre = !filters.genre || game.genre === filters.genre;
+    return matchesPlatform && matchesGenre;
+  });
+}
+
+function renderGames() {
+  const visibleGames = getVisibleGames();
+  gameList.innerHTML = "";
+  updateFilterOptions();
+
+  if (visibleGames.length === 0) {
     gameList.innerHTML = "<p>Nessun gioco salvato.</p>";
     gameCount.textContent = "0 giochi";
     return;
   }
 
-  games.forEach((game) => {
+  visibleGames.forEach((game) => {
     const card = document.createElement("article");
     card.className = "game-card";
     card.innerHTML = `
@@ -75,7 +108,7 @@ function renderGames() {
     gameList.appendChild(card);
   });
 
-  gameCount.textContent = `${games.length} giochi`;
+  gameCount.textContent = `${visibleGames.length} giochi`;
 }
 
 form.addEventListener("submit", (event) => {
@@ -104,6 +137,16 @@ gameList.addEventListener("click", (event) => {
   }
 
   removeGame(button.dataset.id);
+});
+
+platformFilter.addEventListener("change", () => {
+  filters.platform = platformFilter.value;
+  renderGames();
+});
+
+genreFilter.addEventListener("change", () => {
+  filters.genre = genreFilter.value;
+  renderGames();
 });
 
 renderGames();
