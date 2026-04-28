@@ -77,9 +77,15 @@ function updateFilterOptions() {
 
 function getVisibleGames() {
   const filteredGames = games.filter((game) => {
+    const searchValue = filters.search.toLowerCase();
     const matchesPlatform = !filters.platform || game.platform === filters.platform;
     const matchesGenre = !filters.genre || game.genre === filters.genre;
-    return matchesPlatform && matchesGenre;
+    const matchesSearch =
+      !searchValue ||
+      game.title.toLowerCase().includes(searchValue) ||
+      game.studio.toLowerCase().includes(searchValue);
+
+    return matchesPlatform && matchesGenre && matchesSearch;
   });
 
   return filteredGames.sort((firstGame, secondGame) => {
@@ -167,6 +173,11 @@ genreFilter.addEventListener("change", () => {
 
 sortBy.addEventListener("change", () => {
   filters.sort = sortBy.value;
+  renderGames();
+});
+
+searchInput.addEventListener("input", () => {
+  filters.search = searchInput.value.trim();
   renderGames();
 });
 
