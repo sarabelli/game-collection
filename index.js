@@ -9,10 +9,16 @@ const {
     cercaVideogiochi
 } = require("./funzioni");
 
+function pausa() {
+    prompt("\n⏸️ Premi INVIO per continuare...");
+}
+
 function menu() {
     let uscita = false;
 
     while (!uscita) {
+        console.clear();
+
         const scelta = prompt(
 `🎮 GESTIONE VIDEOGIOCHI
 
@@ -36,42 +42,50 @@ Scegli un'opzione: `
                 const sviluppatore = prompt("Sviluppatore: ");
 
                 aggiungiVideogioco(titolo, piattaforma, genere, anno, sviluppatore);
-                console.log("✔ Videogioco aggiunto!");
+                console.log("\n✔ Videogioco aggiunto!");
+                pausa();
                 break;
 
             case "2":
                 const id = prompt("ID o Titolo da rimuovere: ");
                 const rimosso = rimuoviVideogioco(id);
-                console.log(rimosso ? "✔ Rimosso!" : "❌ Non trovato");
+
+                console.log(rimosso ? "\n✔ Rimosso!" : "\n❌ Non trovato");
+                pausa();
                 break;
 
             case "3":
-                console.table(visualizzaVideogiochi());
+                visualizzaVideogiochi();
+                pausa();
                 break;
 
             case "4":
-                const chiave = prompt("Filtra per 'piattaforma' o 'genere': ");
+                const chiave = prompt("piattaforma o genere: ");
                 const valore = prompt("Valore: ");
                 console.table(filtraVideogiochi(chiave, valore));
+                pausa();
                 break;
 
             case "5":
-                const criterio = prompt("Ordina per 'titolo' o 'anno': ");
+                const criterio = prompt("titolo o anno: ");
                 console.table(ordinaVideogiochi(criterio));
+                pausa();
                 break;
 
             case "6":
-                const ricerca = prompt("Cerca titolo o sviluppatore: ");
+                const ricerca = prompt("Cerca: ");
                 console.table(cercaVideogiochi(ricerca));
+                pausa();
                 break;
 
             case "0":
                 uscita = true;
-                console.log("👋 Uscita dal programma");
+                console.log("\n👋 Uscita dal programma");
                 break;
 
             default:
-                console.log("Scelta non valida");
+                console.log("\n❌ Scelta non valida");
+                pausa();
         }
     }
 }

@@ -1,7 +1,5 @@
-// Collezione videogiochi
 let videogiochi = [];
 
-// Aggiungi videogioco
 function aggiungiVideogioco(titolo, piattaforma, genere, anno, sviluppatore) {
     const gioco = {
         id: Date.now(),
@@ -11,11 +9,11 @@ function aggiungiVideogioco(titolo, piattaforma, genere, anno, sviluppatore) {
         anno,
         sviluppatore
     };
+
     videogiochi.push(gioco);
     return gioco;
 }
 
-// Rimuovi videogioco (per id o titolo)
 function rimuoviVideogioco(identificativo) {
     const lunghezzaIniziale = videogiochi.length;
 
@@ -27,8 +25,9 @@ function rimuoviVideogioco(identificativo) {
     return videogiochi.length < lunghezzaIniziale;
 }
 
-// Visualizza collezione
 function visualizzaVideogiochi() {
+    console.clear();
+
     if (videogiochi.length === 0) {
         console.log("\n📭 Nessun videogioco nella collezione.\n");
         return;
@@ -47,14 +46,12 @@ function visualizzaVideogiochi() {
     });
 }
 
-// Filtra per piattaforma o genere
 function filtraVideogiochi(chiave, valore) {
     return videogiochi.filter(v =>
         v[chiave] && v[chiave].toLowerCase() === valore.toLowerCase()
     );
 }
 
-// Ordina videogiochi
 function ordinaVideogiochi(criterio) {
     const ordinati = [...videogiochi];
 
@@ -69,7 +66,6 @@ function ordinaVideogiochi(criterio) {
     return ordinati;
 }
 
-// Ricerca videogiochi (titolo o sviluppatore)
 function cercaVideogiochi(testo) {
     return videogiochi.filter(v =>
         v.titolo.toLowerCase().includes(testo.toLowerCase()) ||
