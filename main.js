@@ -76,10 +76,26 @@ function updateFilterOptions() {
 }
 
 function getVisibleGames() {
-  return games.filter((game) => {
+  const filteredGames = games.filter((game) => {
     const matchesPlatform = !filters.platform || game.platform === filters.platform;
     const matchesGenre = !filters.genre || game.genre === filters.genre;
     return matchesPlatform && matchesGenre;
+  });
+
+  return filteredGames.sort((firstGame, secondGame) => {
+    if (filters.sort === "title-desc") {
+      return secondGame.title.localeCompare(firstGame.title);
+    }
+
+    if (filters.sort === "year-asc") {
+      return Number(firstGame.year || 0) - Number(secondGame.year || 0);
+    }
+
+    if (filters.sort === "year-desc") {
+      return Number(secondGame.year || 0) - Number(firstGame.year || 0);
+    }
+
+    return firstGame.title.localeCompare(secondGame.title);
   });
 }
 
@@ -146,6 +162,11 @@ platformFilter.addEventListener("change", () => {
 
 genreFilter.addEventListener("change", () => {
   filters.genre = genreFilter.value;
+  renderGames();
+});
+
+sortBy.addEventListener("change", () => {
+  filters.sort = sortBy.value;
   renderGames();
 });
 
