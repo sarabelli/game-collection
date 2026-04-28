@@ -35,6 +35,17 @@ function saveGames() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
 }
 
+function createGame(data) {
+  return {
+    id: crypto.randomUUID(),
+    title: data.title.trim(),
+    platform: data.platform,
+    genre: data.genre.trim(),
+    year: data.year.trim(),
+    studio: data.studio.trim()
+  };
+}
+
 function renderGames() {
   gameList.innerHTML = "";
 
@@ -59,5 +70,23 @@ function renderGames() {
 
   gameCount.textContent = `${games.length} giochi`;
 }
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const newGame = createGame({
+    title: formData.get("title") || "",
+    platform: formData.get("platform") || "",
+    genre: formData.get("genre") || "",
+    year: formData.get("year") || "",
+    studio: formData.get("studio") || ""
+  });
+
+  games.unshift(newGame);
+  saveGames();
+  renderGames();
+  form.reset();
+});
 
 renderGames();
